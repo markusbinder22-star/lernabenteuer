@@ -1,0 +1,15 @@
+{
+  "name": "Purzeltal – Lernabenteuer",
+  "short_name": "Purzeltal",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#fbf3e2",
+  "theme_color": "#f4c95d",
+  "lang": "de",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#f4c95d">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Purzeltal</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- Spiel-HUD -->
+  <div id="hud" class="hidden">
+    <div class="hud-left">
+      <button id="btn-home" class="hud-btn" aria-label="Zurück zum Start"></button>
+      <div id="taler" class="taler-box"><span class="knopf"></span><span id="taler-num">0</span></div>
+      <div id="wish-jar" class="jar hidden" title="Spar-Glas"><div class="jar-fill"></div><canvas class="jar-icon" width="48" height="48"></canvas></div>
+    </div>
+    <div class="hud-right">
+      <button id="btn-ranzl" class="hud-btn" aria-label="Nochmal vorlesen"></button>
+      <button id="btn-bag" class="hud-btn" aria-label="Rucksack öffnen"></button>
+      <button id="btn-map" class="hud-btn" aria-label="Talkarte"></button>
+      <button id="btn-save" class="hud-btn" aria-label="Speichern"></button>
+    </div>
+  </div>
+
+  <!-- Touch-Steuerung -->
+  <div id="controls" class="hidden">
+    <div class="ctl-left">
+      <button id="ctl-left" class="ctl" aria-label="Links"><svg viewBox="0 0 40 40"><path d="M26 6 L10 20 L26 34" /></svg></button>
+      <button id="ctl-right" class="ctl" aria-label="Rechts"><svg viewBox="0 0 40 40"><path d="M14 6 L30 20 L14 34" /></svg></button>
+    </div>
+    <div class="ctl-right">
+      <button id="ctl-act" class="ctl act hidden" aria-label="Benutzen"><svg viewBox="0 0 40 40"><path d="M14 30 V14 a3 3 0 0 1 6 0 V22 M20 18 a3 3 0 0 1 6 0 V22 M26 20 a3 3 0 0 1 6 0 V28 a8 8 0 0 1 -8 8 H20 a8 8 0 0 1 -7 -4 L8 24 a3 3 0 0 1 5 -3 L14 23" /></svg></button>
+      <button id="ctl-jump" class="ctl jump" aria-label="Springen"><svg viewBox="0 0 40 40"><path d="M8 26 L20 12 L32 26" /><path d="M8 34 L20 20 L32 34" /></svg></button>
+    </div>
+  </div>
+
+  <!-- Bildschirme und Overlays werden per JS hier eingefügt -->
+  <div id="screens"></div>
+  <div id="dialog" class="hidden"></div>
+  <div id="toast" class="hidden"></div>
+
+  <script src="js/core.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/lines.js"></script>
+  <script src="js/speech.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/draw.js"></script>
+  <script src="js/avatar.js"></script>
+  <script src="js/items.js"></script>
+  <script src="js/learn.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/stations.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/menus.js"></script>
+  <script src="js/parents.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
