@@ -324,7 +324,7 @@
           else api.answer(true);
         });
         drawTray();
-        stage.append(scene, el('div', { class: 'pile-row' }, [pile, tray]), payBtn);
+        stage.append(scene, el('div', { class: 'pile-row' }, [pile, tray, payBtn]));
       },
       async help2() { showSlots = true; drawTray(); await say('Ich hab dir für jeden Punkt einen Platz gemacht. Füll alle Plätze.'); },
       async solve() { showSlots = true; paid = p; drawTray(); payBtn.classList.add('hl'); },
@@ -378,7 +378,7 @@
           else api.answer(true);
         });
         drawTray();
-        stage.append(scene, coinRow, tray, sumEl, payBtn);
+        stage.append(scene, coinRow, el('div', { class: 'pile-row' }, [tray, payBtn]), sumEl);
       },
       async help2() { showSum = true; drawTray(); await say(`Ich zähl für dich mit. Du hast ${sum()} Cent hingelegt. Du brauchst ${price}.`); },
       async solve() {
@@ -455,7 +455,7 @@
       if (placed > b && !warned) { warned = true; say('Das sind zu viele Säcke. Tipp auf den letzten blauen Sack, um ihn wegzunehmen.'); }
     }
     return {
-      prompt: { text: `Rechne ${a} plus ${b}. Stell ${b} blaue Säcke dazu.`, who: 'ranzl' },
+      prompt: { text: `Rechne ${a} plus ${b}. Stell ${b === 1 ? 'einen blauen Sack' : b + ' blaue Säcke'} dazu.`, who: 'ranzl' },
       hint1: 'zwanziger.hilfe1',
       mount(stage, api) {
         stageEl = stage;
@@ -468,7 +468,7 @@
         pile.addEventListener('click', () => { if (a + placed < 20 && !api.busy) { placed++; PT.sound.plank(); drawSacks(); updateTiles(); } });
         tilesEl = T().tiles(PT.numberOptions(sum, 4, 1, 20), tilePick(api, sum));
         tilesEl.style.visibility = 'hidden';
-        stage.append(eq, scene, pile, tilesEl);
+        stage.append(eq, el('div', { class: 'pile-row' }, [scene, pile]), tilesEl);
         drawSacks();
       },
       async help2() {

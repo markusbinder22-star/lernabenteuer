@@ -219,7 +219,7 @@
   function baumhaus() {
     const p = PT.game.profile, g = p.game;
     let close, raf, t = 0;
-    const c = el('canvas', { width: 1000, height: 600, style: { width: '100%', maxWidth: '1000px', height: 'auto', display: 'block', margin: '0 auto', borderRadius: '22px' } });
+    const c = el('canvas', { width: 1000, height: 600, class: 'room-canvas' });
     const ctx = c.getContext('2d');
     const d = PT.draw;
     function frame() {
@@ -283,7 +283,7 @@
   async function fest() {
     const p = PT.game.profile, g = p.game;
     let close, raf, t = 0;
-    const c = el('canvas', { width: 1200, height: 640, style: { width: '100%', height: 'auto', maxHeight: '70vh', display: 'block', margin: '0 auto', borderRadius: '22px' } });
+    const c = el('canvas', { width: 1200, height: 640, class: 'room-canvas', style: { aspectRatio: '15 / 8' } });
     const ctx = c.getContext('2d');
     const conf = Array.from({ length: 90 }, () => ({ x: Math.random() * 1200, y: Math.random() * -640, v: 60 + Math.random() * 90, c: PT.pick(['#d9534f', '#f2c14e', '#3f7ab0', '#5aa246', '#f29b8f']), r: Math.random() * 6 }));
     function frame() {

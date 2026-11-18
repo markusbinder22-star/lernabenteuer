@@ -201,6 +201,7 @@
           get busy() { return busy; },
         };
 
+        PT.tasks._current = { task, api };
         task.mount(stage, api);
         if (task.intro) { busy = true; await task.intro(); busy = false; }
         else await PT.speech.say(task.prompt);

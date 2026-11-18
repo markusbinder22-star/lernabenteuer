@@ -339,11 +339,13 @@
       });
     }
 
-    // Orte entdecken
+    // Orte entdecken (nur wenn gerade nichts anderes offen ist)
+    if (frozen) { /* nichts */ } else {
     if (pl.x > 1950 && !G.discovered.includes('weg')) { G.discovered.push('weg'); PT.ui.dialog(['ranzl.weg']); }
     if (pl.x > 4000 && !G.discovered.includes('muehlberg')) { G.discovered.push('muehlberg'); PT.ui.dialog(['ranzl.muehlberg']); }
     if (!G.springfedern && !G.chestOpened && Math.abs(pl.x - (LEDGE.x + 75)) < 120 && remember('truhe')) PT.ui.dialog(['ranzl.truhe.zu']);
     if (!G.prologDone && pl.x > 1700 && G.hasRanzl && remember('erstknoepfe')) PT.ui.dialog([{ who: 'pfeffer', text: 'Halt! Zuerst die drei Knöpfe bei meiner Werkstatt, bitte.' }]);
+    }
 
     // Silben: Ende eines Wortes erkennen
     if (silben) {
