@@ -61,11 +61,18 @@ jobs:
       - name: APK umbenennen
         run: cp android/app/build/outputs/apk/debug/app-debug.apk Purzeltal.apk
 
+      - name: PC-Version (eine HTML-Datei) bauen
+        run: |
+          python3 scripts/build_pc.py
+          cp dist/Purzeltal.html Purzeltal-PC.html
+
       - name: APK als Build-Artefakt ablegen
         uses: actions/upload-artifact@v4
         with:
           name: Purzeltal-APK
-          path: Purzeltal.apk
+          path: |
+            Purzeltal.apk
+            Purzeltal-PC.html
           retention-days: 30
 
       - name: APK als Release veröffentlichen (Download-Link)
@@ -78,7 +85,7 @@ jobs:
             TAG="app-test"; TITLE="Purzeltal – Testversion (noch nicht übernommen)"; FLAG="--prerelease"
           fi
           gh release delete "$TAG" --yes --cleanup-tag || true
-          gh release create "$TAG" Purzeltal.apk $FLAG \
+          gh release create "$TAG" Purzeltal.apk Purzeltal-PC.html $FLAG \
             --target "$GITHUB_SHA" \
             --title "$TITLE" \
-            --notes "Automatisch gebaut aus ${GITHUB_REF_NAME} (Build ${GITHUB_RUN_NUMBER}). Datei Purzeltal.apk herunterladen und auf dem Android-Gerät öffnen."
+            --notes "Automatisch gebaut aus ${GITHUB_REF_NAME} (Build ${GITHUB_RUN_NUMBER}). Android: Purzeltal.apk herunterladen und am Gerät öffnen. PC: Purzeltal-PC.html herunterladen und doppelklicken (läuft offline in Chrome/Edge)."

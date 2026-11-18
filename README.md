@@ -32,6 +32,13 @@ Die fertige Datei liegt unter **Releases**:
 Updates einfach über die alte App installieren: Der Signaturschlüssel ist immer derselbe, deshalb bleiben die Spielstände erhalten.
 Achtung: **App deinstallieren löscht die Spielstände.** Vorher im Elternbereich eine Sicherung machen.
 
+## Am PC spielen (ohne Installation)
+
+Im selben Release liegt `Purzeltal-PC.html`: das ganze Spiel in einer Datei. Herunterladen, doppelklicken, läuft offline in Chrome oder Edge.
+Steuerung: Pfeiltasten, Leertaste zum Springen, Enter zum Benutzen (oder mit der Maus klicken).
+Spielstände liegen im Browser dieses PCs. Browserdaten löschen löscht sie, deshalb ab und zu im Elternbereich sichern.
+Gebaut wird die Datei mit `python3 scripts/build_pc.py` → `dist/Purzeltal.html`.
+
 ## Im Browser spielen
 
 Der Ordner `www/` ist das ganze Spiel (reines HTML/JavaScript, kein Build-Schritt).
