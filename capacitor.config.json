@@ -1,0 +1,9 @@
+{
+  "appId": "at.purzeltal.lernabenteuer",
+  "appName": "Purzeltal",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#fbf3e2"
+  }
+}

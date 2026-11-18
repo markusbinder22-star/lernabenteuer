@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#f4c95d"/>
+  <g transform="translate(256 270)">
+    <path d="M-120 -40 Q-170 20 -150 90" stroke="#6b4123" stroke-width="22" fill="none" stroke-linecap="round"/>
+    <path d="M120 -40 Q170 20 150 90" stroke="#6b4123" stroke-width="22" fill="none" stroke-linecap="round"/>
+    <rect x="-130" y="-140" width="260" height="290" rx="80" fill="#a0673a" stroke="#5e3a1f" stroke-width="10"/>
+    <path d="M-130 -60 Q0 30 130 -60 L130 -80 Q130 -140 50 -140 L-50 -140 Q-130 -140 -130 -80 Z" fill="#875530" stroke="#5e3a1f" stroke-width="10"/>
+    <circle cx="-50" cy="-62" r="28" fill="#3b2f2a"/><circle cx="50" cy="-62" r="28" fill="#3b2f2a"/>
+    <circle cx="-58" cy="-72" r="8" fill="#fff"/><circle cx="42" cy="-72" r="8" fill="#fff"/>
+    <rect x="-72" y="10" width="144" height="30" rx="12" fill="#4a2b17"/>
+    <g stroke="#d6c08a" stroke-width="6">
+      <line x1="-60" y1="8" x2="-60" y2="42"/><line x1="-36" y1="8" x2="-36" y2="42"/><line x1="-12" y1="8" x2="-12" y2="42"/>
+      <line x1="12" y1="8" x2="12" y2="42"/><line x1="36" y1="8" x2="36" y2="42"/><line x1="60" y1="8" x2="60" y2="42"/>
+    </g>
+    <rect x="44" y="70" width="60" height="52" rx="10" fill="#d9a441" stroke="#5e3a1f" stroke-width="6"/>
+  </g>
+</svg>
