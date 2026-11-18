@@ -1,0 +1,20 @@
+{
+  "name": "kivalu-lernabenteuer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Kivalu und die gestohlene Herzglut – ein Lern-Abenteuer für Kinder von 4 bis 9 Jahren",
+  "scripts": {
+    "serve": "npx --yes http-server www -p 8080 -c-1",
+    "pc": "python3 scripts/build_pc.py"
+  },
+  "dependencies": {
+    "@capacitor-community/text-to-speech": "5.1.0",
+    "@capacitor/android": "6.2.1",
+    "@capacitor/app": "6.0.2",
+    "@capacitor/core": "6.2.1"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "3.0.5",
+    "@capacitor/cli": "6.2.1"
+  }
+}
