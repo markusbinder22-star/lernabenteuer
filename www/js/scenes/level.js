@@ -25,7 +25,11 @@ const LIQ = { 1: 'lava', 2: 'swamp', 3: 'water', 4: 'lava', 5: 'water', 6: 'lava
 
 class LevelScene extends Phaser.Scene {
   constructor() { super('Level'); }
-  init(data) { this.lvId = data.id; }
+  init(data) {
+    this.lvId = data.id;
+    // die Szene wird bei „Nochmal“ und beim nächsten Level wiederverwendet: alten Zustand wegräumen
+    for (const k of ['won', '_reach', 'arena', 'boss', 'cart', 'steamFx', 'finish', 'respawnAt', 'start', 'dunking', 'exh', 'hintShown', 'deaths', 'pauseC', 'paused', 'busy', 'safe', 'safeT', 'checkpoint', 'inp', 'prev']) this[k] = undefined;
+  }
   create() {
     const p = this.p = K.Save.cur(); if (!p) return this.scene.start('Profiles');
     K.Speech.stop();
@@ -177,8 +181,68 @@ class LevelScene extends Phaser.Scene {
   }
 
   // Dekoration auf freien Bodenflächen
+  // Welche Standflächen erreicht Kivalu mit normalen Sprüngen? (für Deko und den automatischen Level-Check)
+  // Sprung −880 bei Schwerkraft 1900 ≈ 3 Felder, bequem sind 2. Doppelsprung bequem 4, Klettern beliebig.
+  reach() {
+    if (this._reach) return this._reach;
+    const order = ['fire', 'double', 'melt', 'climb', 'fly', 'bigfire'];
+    const ab = {}; order.forEach((k, i) => ab[k] = this.ab[k] || i < this.w); // Kunst des eigenen Kapitels gibt es im Level
+    const hard = (x, y) => this.ch(x, y) === '#'; // Netze, Eis und Gitter kann Kivalu wegmachen
+    const air = (x, y) => !hard(x, y) && this.ch(x, y) !== '=';
+    const mv = new Set(); // Fahrbereich der beweglichen Plattformen
+    for (let x = 0; x < this.cols; x++) for (let y = 0; y < this.rows; y++) if (this.ch(x, y) === 'M') { let a = x, b = x; while (a > 0 && !hard(a - 1, 9)) a--; while (b < this.cols - 1 && !hard(b + 1, 9)) b++; for (let k = a; k <= b; k++) mv.add(k * 100 + y); }
+    const stand = (x, y) => mv.has(x * 100 + y) || x >= 0 && x < this.cols && y > 1 && y < this.rows && '#XIG=_M'.includes(this.ch(x, y))
+      && !'#L^'.includes(this.ch(x, y - 1)) && !hard(x, y - 2) && !'L^'.includes(this.ch(x, y));
+    const key = (x, y) => x * 100 + y, seen = new Set(), all = [];
+    for (let x = 0; x < this.cols; x++) for (let y = 2; y < this.rows; y++) if (stand(x, y)) all.push([x, y]);
+    const sx = Math.floor(this.start.x / K.TILE); let sy = Math.floor(this.start.y / K.TILE);
+    while (sy < this.rows && !stand(sx, sy)) sy++;
+    // günstigster Weg (Dijkstra): kurze, flache Sprünge sind billig, Doppelsprünge teuer – so wie ein Kind springen würde
+    const cost = new Map([[key(sx, sy), 0]]), done = new Set(), par = new Map(), q = [[0, sx, sy]];
+    const push = (x, y, from, c = 1) => { if (!stand(x, y)) return; const k = key(x, y), nc = cost.get(from) + c; if (cost.has(k) && cost.get(k) <= nc) return; cost.set(k, nc); par.set(k, from); seen.add(k); q.push([nc, x, y]); };
+    seen.add(key(sx, sy));
+    const colFree = (x, y0, y1) => { for (let y = Math.min(y0, y1); y <= Math.max(y0, y1); y++) if (hard(x, y)) return false; return true; };
+    while (q.length) {
+      let bi = 0; for (let n = 1; n < q.length; n++) if (q[n][0] < q[bi][0]) bi = n;
+      const [, x, y] = q[bi]; q[bi] = q[q.length - 1]; q.pop();
+      if (done.has(key(x, y))) continue; done.add(key(x, y));
+      const bounce = this.ch(x, y - 1) === 'B';
+      const rise = bounce ? 5 : ab.double ? 4 : 2;
+      for (let dx = -9; dx <= 9; dx++) {
+        const tx = x + dx; if (tx < 0 || tx >= this.cols) continue;
+        // hochspringen oder seitlich springen: Flugzeit aus der Sprungkurve, 15 % Reserve
+        for (let ty = y - rise; ty <= Math.min(this.rows - 1, y + 6); ty++) {
+          const up = (y - ty) * 64 + 12, v = bounce ? 1180 : 880, d = v * v - 3800 * up;
+          let t = d < 0 ? 0 : (v + Math.sqrt(d)) / 1900; const t1 = t;
+          if (ab.double && !bounce) { const h = 880 * 880 / 3800, d2 = 780 * 780 + 3800 * (h - up); if (d2 >= 0) t = Math.max(t, 880 / 1900 + (780 + Math.sqrt(d2)) / 1900); }
+          const reach = 330 * 0.85 * t, needDbl = (Math.abs(dx) - 1) * 64 - 40 > 330 * 0.85 * t1 || y - ty > 2;
+          if (!reach) continue;
+          const mover = false;
+          if (!mover && (Math.abs(dx) - 1) * 64 - 40 > reach) continue;
+          if (!stand(tx, ty)) continue;
+          const top = Math.min(y, ty) - 2;
+          if (!colFree(x, y - 1, top)) continue; // Kopf frei
+          let ok = true; const s = Math.sign(dx);
+          for (let cx = x + s; s && cx !== tx + s && ok; cx += s) if (!colFree(cx, top, Math.min(y, ty) - 1)) ok = false;
+          if (ok) push(tx, ty, key(x, y), 1 + Math.abs(dx) * 0.3 + Math.max(0, y - ty) * 0.8 + (needDbl ? 6 : 0));
+        }
+        // herunterfallen
+        if (Math.abs(dx) <= 3 && dx !== 0 && air(tx, y - 1) && air(tx, y - 2)) {
+          let ty = y; while (ty < this.rows && !stand(tx, ty)) { if (hard(tx, ty)) break; ty++; }
+          if (ty < this.rows && stand(tx, ty)) push(tx, ty, key(x, y), 1 + Math.abs(dx) * 0.3);
+        }
+      }
+      // klettern: an einer Wand beliebig hoch
+      if (ab.climb) for (const s of [-1, 1]) if (hard(x + s, y - 1)) { for (let ty = y - 1; ty > 1; ty--) { if (hard(x, ty - 2)) break; if (stand(x + s, ty)) { push(x + s, ty, key(x, y), 3 + (y - ty)); break; } } }
+    }
+    // Weg vom Start zu einer Standfläche (für den Testspieler)
+    const path = (x, y) => { let k = key(x, y); if (!seen.has(k)) return null; const out = []; while (k != null) { out.unshift([Math.floor(k / 100), k % 100]); k = par.get(k); } return out; };
+    return (this._reach = { has: (x, y) => seen.has(key(x, y)), all, ab, path, stand, mv: (x, y) => mv.has(key(x, y)) });
+  }
+
   decorate() {
     const D = K.DECO[this.w]; if (!D) return;
+    const rc = this.mode === 'fly' ? null : this.reach();
     const R = K.Art.seeded(99 + this.lv.idx * 31 + this.w);
     const T = K.TILE; let next = 4;
     const free = (cx, cy) => { for (let k = -1; k <= 1; k++) { const c = this.ch(cx + k, cy - 1); if (c !== ' ' && c !== 'o') return false; const g = this.ch(cx + k, cy); if (g !== '#') return false; } return true; };
@@ -188,6 +252,7 @@ class LevelScene extends Phaser.Scene {
       for (let cy = 3; cy < this.rows; cy++) {
         if (this.ch(cx, cy) !== '#' || this.ch(cx, cy - 1) === '#') continue;
         if (!free(cx, cy)) break;
+        if (rc && !rc.has(cx, cy)) break; // keine Deko auf Flächen, die man nicht erreicht
         const back = R() < 0.55;
         const key = back ? D.back[Math.floor(R() * D.back.length)] : D.front[Math.floor(R() * D.front.length)];
         if (!this.textures.exists(key)) break;

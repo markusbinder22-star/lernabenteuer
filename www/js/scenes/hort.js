@@ -13,6 +13,7 @@ class HortScene extends Phaser.Scene {
     this.hud = K.UI.hud(this, p, K.W - 400, 18);
     K.UI.roundBtn(this, 50, 50, 32, 'ic_back', () => this.leave(), { style: 'stone' });
     this.backH = () => this.leave(); K.events.on('back', this.backH); this.events.once('shutdown', () => K.events.off('back', this.backH));
+    this.shop = null; this.preview = null; this.previewHat = undefined;
     this.shelf();
     this.tab = 'hats'; this.buildShop();
   }

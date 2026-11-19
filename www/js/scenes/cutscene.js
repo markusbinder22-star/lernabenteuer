@@ -2,7 +2,7 @@
 'use strict';
 class CutsceneScene extends Phaser.Scene {
   constructor() { super('Cutscene'); }
-  init(data) { this.id = data.id; this.next = data.next || { scene: 'Map' }; this.panels = K.Story.CUTS[data.id] || []; this.i = -1; }
+  init(data) { this.id = data.id; this.next = data.next || { scene: 'Map' }; this.panels = K.Story.CUTS[data.id] || []; this.i = -1; this.done = false; this.busy = false; this.layer = null; }
   create() {
     this.p = K.Save.cur();
     this.cameras.main.fadeIn(400, 0, 0, 0);

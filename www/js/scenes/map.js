@@ -2,7 +2,7 @@
 'use strict';
 class MapScene extends Phaser.Scene {
   constructor() { super('Map'); }
-  init(data) { this.focus = data && data.focus; }
+  init(data) { this.focus = data && data.focus; this.sx = null; }
   create() {
     this.p = K.Save.cur(); if (!this.p) return this.scene.start('Profiles');
     K.Speech.stop();

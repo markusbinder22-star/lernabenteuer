@@ -1,4 +1,5 @@
 // Aufruf: aus www/ einen Webserver auf Port 8765 starten, dann: node tools/test/levelcheck.js [1-1,1-2] (STAGE=ei für Drachenei)
+// REACH_ONLY=1 prüft nur die Erreichbarkeit (schnell)
 // Spielt jedes Level automatisch ab: läuft zu jedem Tor/Brücke/Hort, beantwortet die Aufgabe, prüft das Öffnen, läuft ins Ziel
 const { chromium } = require('playwright');
 const levels = process.argv[2] ? process.argv[2].split(',') : ['1-1','1-2','1-3','2-1','2-2','2-3','3-1','3-2','3-3','4-1','4-2','4-3','5-1','5-2','5-3','6-1','6-2','6-3','7-1','7-2','7-3'];
@@ -8,6 +9,7 @@ const stage = process.env.STAGE || 'jung';
   for (const id of levels) {
     const pg = await b.newPage({ viewport: { width: 1280, height: 720 } });
     const errs = []; pg.on('pageerror', e => errs.push(e.message));
+    if (process.env.REACH_ONLY) await pg.addInitScript(() => { window.REACH_ONLY = true; });
     await pg.addInitScript(([id, stage]) => {
       const ch = +id[0]; const order = ['fire', 'double', 'melt', 'climb', 'fly', 'bigfire'];
       const p = { id: 'pt', name: 'T', stage, color: 'blau', hat: null, created: 1, seen: { prolog: true }, levels: {}, coins: 0 };
@@ -28,6 +30,19 @@ const stage = process.env.STAGE || 'jung';
       const ground = (cx) => { for (let y = 1; y < 12; y++) if (L.solidAt(cx, y) && !L.solidAt(cx, y - 1)) return y * 64 - 2; return null; };
       const place = (x, yHint) => { if (L.mode === 'fly') return L.pl.body.reset(x, yHint || 360); let cx = Math.floor(x / 64); for (let k = 0; k < 6; k++) { const y = ground(cx - k); if (y != null && L.ch(cx - k, Math.floor(y / 64) + 1) !== 'L') { L.pl.body.reset((cx - k) * 64 + 32, y - 4); return; } } L.pl.body.reset(x, 300); };
       const waitFor = async (fn, ms) => { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (fn()) return true; await sleep(100); } return false; };
+      // Erreichbarkeit: alles Nötige mit normalen Sprüngen erreichbar? (Sprung bequem 2 Felder, Doppelsprung 4)
+      if (L.mode !== 'fly') {
+        const R = L.reach(), names = { F: 'Ziel', '?': 'Rätseltor', Z: 'Zahlenbrücke', S: 'Hort', K: 'Kontrollpunkt', C: 'Truhe', T: 'Schatz' };
+        const near = (x, y) => { for (let sx = x - 2; sx <= x + 2; sx++) for (let sy = y + 1; sy <= y + 3; sy++) if (R.has(sx, sy)) return true; return false; };
+        const miss = [];
+        for (let y = 0; y < L.rows; y++) for (let x = 0; x < L.cols; x++) { const c = L.ch(x, y); if (names[c] && !near(x, y)) miss.push(`${names[c]} @${x},${y}`); }
+        // Flächen ab 2 Feldern Breite, auf die man nicht kommt (sehen aus wie ein Weg)
+        const lure = []; const un = R.all.filter(([x, y]) => !R.has(x, y) && !'MXIG'.includes(L.ch(x, y)));
+        const set = new Set(un.map(([x, y]) => x * 100 + y)), done = new Set();
+        for (const [x, y] of un) { if (done.has(x * 100 + y)) continue; let w = 0; while (set.has((x + w) * 100 + y)) { done.add((x + w) * 100 + y); w++; } if (w >= 2) lure.push(`${x}-${x + w - 1},${y}`); }
+        log.push(`Erreichbarkeit: ${miss.length ? 'NICHT erreichbar: ' + miss.join(', ') : 'ok'}` + (lure.length ? `  | unerreichbare Flächen: ${lure.join(' ')}` : ''));
+        if (window.REACH_ONLY) return log;
+      }
       // Hort
       for (const t of L.triggers.filter(t => t.type === 'shrine')) {
         place(t.x - 4 * 64); const ok = await waitFor(() => L.busy || t.used && t.known, 8000);

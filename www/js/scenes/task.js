@@ -6,7 +6,7 @@ const CAT_ICON = { mathe: '🔢', schreiben: '✏️', lesen: '📖', englisch: 
 
 class TaskScene extends Phaser.Scene {
   constructor() { super('Task'); }
-  init(data) { this.cat = data.cat; this.why = data.why || ''; this.onDone = data.onDone; this.tries = 0; this.firstTry = true; }
+  init(data) { this.cat = data.cat; this.why = data.why || ''; this.onDone = data.onDone; this.tries = 0; this.firstTry = true; this.usedEye = false; this.locked = false; }
   create() {
     this.p = K.Save.cur();
     this.add.rectangle(0, 0, K.W, K.H, 0x050208, 0.62).setOrigin(0);
