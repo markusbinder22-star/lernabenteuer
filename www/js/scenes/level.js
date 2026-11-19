@@ -397,7 +397,7 @@ class LevelScene extends Phaser.Scene {
     b.setVelocityX(b.velocity.x + (target - b.velocity.x) * Math.min(1, dt * acc));
     if (dir && this.mode !== 'cart') { if (dir !== pl.dir) { pl.dir = dir; pl.setFlipX(dir < 0); b.setOffset(dir > 0 ? 68 : 50, 54); } }
     // springen
-    if (pl.buf > 0 && pl.coyote > 0) { b.setVelocityY(-860); pl.coyote = 0; pl.buf = 0; K.Audio.sfx('jump', { vol: 0.45 }); this.dust(pl.x, pl.y); }
+    if (pl.buf > 0 && pl.coyote > 0) { b.setVelocityY(-880); pl.coyote = 0; pl.buf = 0; K.Audio.sfx('jump', { vol: 0.45 }); this.dust(pl.x, pl.y); }
     else if (pl.buf > 0 && !onGround && this.ab.double && !pl.dbl && !pl.climbing) { b.setVelocityY(-780); pl.dbl = true; pl.buf = 0; pl.act = 'flutter'; pl.actT = 380; K.Audio.sfx('flutter', { vol: 0.6 }); this.sparks.explode(8, pl.x, pl.y - 40); }
     if (!I.jump && b.velocity.y < -300 && !pl.bounced) b.setVelocityY(b.velocity.y * 0.82);
     if (b.velocity.y >= 0) pl.bounced = false;
