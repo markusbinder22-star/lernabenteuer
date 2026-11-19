@@ -12,7 +12,7 @@ K.TREASURES = [
 K.treasureFor = (id) => K.TREASURES.find(t => t.lv === id);
 
 K.DECO = {
-  1: { back: ['w1_column', 'w1_obelisk', 'w1_rock2', 'w1_rock0'], front: ['w1_rock1', 'w1_rock3', 'w1_rock4', 'w1_rock5', 'w1_skull', 'w1_brazier'] },
+  1: { back: ['w1_obelisk', 'w1_rock2', 'w1_rock0'], front: ['w1_rock1', 'w1_rock3', 'w1_rock4', 'w1_rock5', 'w1_skull'] },
   2: { back: ['w2_tree0', 'w2_tree1', 'w2_tree2', 'w2_tree3', 'w2_tree4', 'w2_crooked', 'w2_mushroom_big'], front: ['w2_mushroom_group', 'w2_mushroom_tan', 'w2_stump', 'w2_log', 'w2_bush', 'w2_grass', 'w2_moss'] },
   3: { back: ['w3_pine', 'w3_pine2', 'w3_tree'], front: ['w3_rocks', 'w3_snowpile', 'w3_snowman'] },
   4: { back: ['w4_support', 'w4_structure', 'w4_column'], front: ['w4_barrel', 'w4_rocks', 'w4_anvil', 'w4_pickaxe', 'w4_crates', 'crystal_blue', 'crystal_red'] },
@@ -293,7 +293,7 @@ class LevelScene extends Phaser.Scene {
       this.tweens.add({ targets: stone, y: groundY - 172, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' }); this.tweens.add({ targets: gl, alpha: 0.4, duration: 900, yoyo: true, repeat: -1 });
       this.add.particles(x, groundY - 150, 'p_spark', { speed: { min: 20, max: 60 }, scale: { start: 0.6, end: 0 }, lifespan: 900, frequency: 120, blendMode: 'ADD' }).setDepth(9);
     }
-    this.add.text(x, groundY - 240, known ? `Drachenhort (${S ? S.name : 'leer'})` : 'Drachenhort: neue Drachenkunst!', K.txt(22, known ? '#c8b8a8' : '#ffe9a8')).setOrigin(0.5).setDepth(14);
+    this.add.text(x, groundY - 240, known ? (S ? `✓ ${S.name} schon gelernt – lauf weiter →` : 'Leerer Hort – lauf weiter →') : 'Drachenhort: neue Drachenkunst!', K.txt(22, known ? '#d8f0c0' : '#ffe9a8')).setOrigin(0.5).setDepth(14);
     this.triggers.push({ type: 'shrine', x, y: groundY, r: 70, used: known, known, gl, stone, skill: S });
   }
 
@@ -615,7 +615,7 @@ class LevelScene extends Phaser.Scene {
         this.addGems(8);
       }
       if (t.type === 'shrine' && !t.used) { t.used = true; this.learnSkill(t); }
-      if (t.type === 'shrine' && t.known && !t.told) { t.told = true; K.UI.toast(this, t.skill ? `Hier hat Kivalu schon ${t.skill.name} gelernt.` : 'Ein leerer alter Hort.', { size: 28 }); }
+      if (t.type === 'shrine' && t.known && !t.told) { t.told = true; K.UI.toast(this, t.skill ? `Hier hat Kivalu schon ${t.skill.name} gelernt. Lauf einfach weiter!` : 'Ein leerer alter Hort. Lauf einfach weiter!', { size: 28, ms: 2600 }); }
     }
     // Tore
     const g = this.gates.find(g => !g.open);
