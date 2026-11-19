@@ -742,7 +742,7 @@ class LevelScene extends Phaser.Scene {
     if (this.paused) { this.paused = false; this.physics.resume(); this.tweens.resumeAll(); this.pauseC.destroy(); return; }
     this.paused = true; this.physics.pause(); this.tweens.pauseAll();
     const c = this.pauseC = this.add.container(0, 0).setScrollFactor(0).setDepth(5000);
-    c.add(this.add.rectangle(0, 0, K.W, K.H, 0x000000, 0.6).setOrigin(0).setInteractive());
+    c.add(this.add.rectangle(0, 0, K.W, K.H, 0x000000, 0.6).setOrigin(0));
     c.add(this.add.nineslice(K.W / 2, K.H / 2, 'ui_panel', null, 560, 500, 36, 36, 36, 36));
     c.add(this.add.text(K.W / 2, K.H / 2 - 190, 'Pause', K.title(60)).setOrigin(0.5));
     c.add(K.UI.button(this, K.W / 2, K.H / 2 - 80, 380, 78, 'Weiterspielen', () => this.togglePause(), { style: 'green', icon: 'ic_play', size: 30 }));

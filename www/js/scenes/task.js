@@ -9,7 +9,7 @@ class TaskScene extends Phaser.Scene {
   init(data) { this.cat = data.cat; this.why = data.why || ''; this.onDone = data.onDone; this.tries = 0; this.firstTry = true; }
   create() {
     this.p = K.Save.cur();
-    this.add.rectangle(0, 0, K.W, K.H, 0x050208, 0.62).setOrigin(0).setInteractive();
+    this.add.rectangle(0, 0, K.W, K.H, 0x050208, 0.62).setOrigin(0);
     this.root = this.add.container(0, 0);
     K.Audio.sfx('question', { vol: 0.5 });
     // Kivalu schaut zu
@@ -64,7 +64,24 @@ class TaskScene extends Phaser.Scene {
     return c;
   }
   drawVisual(v, px, y, pw) {
-    const R = this.root;
+    const R = this.root; const y0g = (yy) => yy + 14;
+    if (v.type === 'emoji' && v.text.split(/\s{3,}/).length > 1) {
+      // Gruppen (z. B. Truhen mit Schlüsseln) als eigene Kästchen zeigen, damit man sie zählen kann
+      const groups = v.text.split(/\s{3,}/); const n = groups.length;
+      const maxLen = Math.max(...groups.map(g => [...g].length));
+      const size = maxLen > 6 ? 30 : maxLen > 4 ? 36 : 44;
+      const texts = groups.map(g => this.add.text(0, 0, g, { fontSize: size + 'px', padding: { top: 6, bottom: 6 } }).setOrigin(0.5));
+      const bw = Math.max(90, ...texts.map(t => t.width)) + 30, bh = size + 34;
+      const perRow = Math.max(1, Math.min(n, Math.floor((pw - 120) / (bw + 16))));
+      const rows = Math.ceil(n / perRow);
+      texts.forEach((t, i) => {
+        const r = Math.floor(i / perRow), c = i % perRow, inRow = Math.min(perRow, n - r * perRow);
+        const gx = px + (c - (inRow - 1) / 2) * (bw + 16), gy = y0g(y) + r * (bh + 14) + bh / 2;
+        R.add(this.add.nineslice(gx, gy, 'ui_btn_white', null, bw, bh, 22, 22, 22, 22).setTint(0xffe8c0));
+        t.setPosition(gx, gy); R.add(t);
+      });
+      return y0g(y) + rows * (bh + 14);
+    }
     if (v.type === 'emoji') {
       const len = [...v.text].length;
       const size = len > 24 ? 40 : len > 14 ? 50 : len > 6 ? 62 : 84;
@@ -106,9 +123,9 @@ class TaskScene extends Phaser.Scene {
     c.t = this.add.text(0, 0, label, Object.assign(K.txt(size, '#2a1206', { strokeThickness: 0, align: 'center', wordWrap: { width: w - 30 } }), { padding: { top: 6, bottom: 6 } })).setOrigin(0.5); c.add(c.t);
     if (c.t.width > w - 20) c.t.setScale((w - 20) / c.t.width);
     c.setSize(w, h).setInteractive({ useHandCursor: true });
-    c.on('pointerdown', () => { if (!this.locked && !c.off) c.setScale(0.95); });
+    c.on('pointerdown', () => { if (!this.locked && !c.blocked) c.setScale(0.95); });
     c.on('pointerout', () => c.setScale(1));
-    c.on('pointerup', () => { c.setScale(1); if (!this.locked && !c.off) { K.Audio.sfx('tap', { vol: 0.5 }); onClick(c); } });
+    c.on('pointerup', () => { c.setScale(1); if (!this.locked && !c.blocked) { K.Audio.sfx('tap', { vol: 0.5 }); onClick(c); } });
     c.paint = (style) => { const nb = this.add.nineslice(0, 0, 'ui_btn_' + style, null, w, h, 26, 26, 26, 26); c.replace(c.bg, nb, true); c.bg = nb; };
     return c;
   }
@@ -213,7 +230,7 @@ class TaskScene extends Phaser.Scene {
     K.Audio.sfx('shimmer', { vol: 0.5 });
     if (t.kind === 'choice') {
       const wrong = K.shuffle(this.opts.filter(o => o.val !== t.answer)); const k = Math.max(1, Math.floor(wrong.length / 2));
-      wrong.slice(0, k).forEach(o => { o.off = true; this.tweens.add({ targets: o, alpha: 0.25, duration: 300 }); });
+      wrong.slice(0, k).forEach(o => { o.blocked = true; this.tweens.add({ targets: o, alpha: 0.25, duration: 300 }); });
     } else if (t.kind === 'keypad') {
       const a = Number(t.answer), lo = Math.max(0, a - K.irnd(1, 3)), hi = lo + K.irnd(3, 5);
       K.UI.toast(this, `Tipp: Die Zahl liegt zwischen ${lo} und ${hi}.`, { size: 30, y: 690, ms: 4000 }); K.Speech.say(`Die Zahl liegt zwischen ${lo} und ${hi}.`);
@@ -221,10 +238,10 @@ class TaskScene extends Phaser.Scene {
       // die ersten richtigen Buchstaben einsetzen
       this.slots.forEach(s => { if (s.tile) this.tapTile(s.tile); });
       const ans = String(t.answer); const k = Math.max(1, Math.floor(ans.length / 2));
-      for (let i = 0; i < k; i++) { const b = this.tiles.find(x => x.slot < 0 && x.ch === ans[i]); if (b) { this.tapTile(b); b.off = true; } }
+      for (let i = 0; i < k; i++) { const b = this.tiles.find(x => x.slot < 0 && x.ch === ans[i]); if (b) { this.tapTile(b); b.blocked = true; } }
     } else if (t.kind === 'order') {
       this.line.slice().forEach(b => this.tapChip(b));
-      const first = t.answer.split(' ')[0]; const b = this.chips.find(c => c.item.t === first); if (b) { this.tapChip(b); b.off = true; }
+      const first = t.answer.split(' ')[0]; const b = this.chips.find(c => c.item.t === first); if (b) { this.tapChip(b); b.blocked = true; }
     }
   }
 
@@ -246,10 +263,10 @@ class TaskScene extends Phaser.Scene {
       this.time.delayedCall(900, () => {
         this.locked = false; this.kiv.setTexture('pt_kivalu_idle'); this.kiv.setScale(330 / this.kiv.height);
         const t = this.task;
-        if (t.kind === 'choice') { btn.off = true; btn.setAlpha(0.3); }
+        if (t.kind === 'choice') { btn.blocked = true; btn.setAlpha(0.3); }
         else if (t.kind === 'keypad') { this.typed = ''; this.dispT.setText('?'); }
-        else if (t.kind === 'tiles') { this.slots.forEach(s => { if (s.tile && !s.tile.off) this.tapTile(s.tile); }); btn.paint('green'); }
-        else if (t.kind === 'order') { this.line.filter(b => !b.off).forEach(b => this.tapChip(b)); this.chips.forEach(c => c.paint('gold')); }
+        else if (t.kind === 'tiles') { this.slots.forEach(s => { if (s.tile && !s.tile.blocked) this.tapTile(s.tile); }); btn.paint('green'); }
+        else if (t.kind === 'order') { this.line.filter(b => !b.blocked).forEach(b => this.tapChip(b)); this.chips.forEach(c => c.paint('gold')); }
       });
     } else this.showSolution();
   }
@@ -257,7 +274,7 @@ class TaskScene extends Phaser.Scene {
     const t = this.task;
     if (t.kind === 'choice') this.opts.forEach(o => { if (o.val === t.answer) o.paint('green'); });
     const c = this.add.container(730, K.H / 2).setDepth(20).setAlpha(0); this.root.add(c);
-    c.add(this.add.rectangle(0, 0, 1040, 660, 0x000000, 0.25).setInteractive());
+    c.add(this.add.rectangle(0, 0, 1040, 660, 0x000000, 0.25));
     c.add(this.add.nineslice(0, 0, 'ui_panel', null, 760, 340, 36, 36, 36, 36));
     c.add(this.add.text(0, -120, 'Schau mal:', K.txt(32, '#ffd27a')).setOrigin(0.5));
     const sol = t.explain || `Die Lösung ist ${t.answer}.`;
