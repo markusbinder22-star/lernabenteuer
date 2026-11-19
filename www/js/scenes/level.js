@@ -267,7 +267,7 @@ class LevelScene extends Phaser.Scene {
     const stone = this.add.image(cx * T + T / 2, cy * T + T + 4, 'w1_obelisk').setOrigin(0.5, 1).setDepth(13); stone.setScale(110 / stone.height).setTint(0x9a8aa0);
     const rune = this.add.text(stone.x, stone.y - 60, 'ᛒ', { fontFamily: 'serif', fontSize: '34px', color: '#ffb347' }).setOrigin(0.5).setDepth(14);
     this.tweens.add({ targets: rune, alpha: 0.4, duration: 700, yoyo: true, repeat: -1 });
-    const g = { cx: cx + 2, cy, info: info || { cat: 'mathe' }, open: false, x: (cx + 2) * T, bridge: cells, parts: [], rune };
+    const g = { cx, cy, info: info || { cat: 'mathe' }, open: false, x: cx * T + T / 2, bridge: cells, parts: [], rune };
     const lbl = this.add.text(stone.x, stone.y - 140, 'Zauberbrücke: ' + K.Tasks.CAT_NAMES[g.info.cat], K.txt(22, '#ffe9a8')).setOrigin(0.5).setDepth(14);
     g.parts.push(lbl); g.lbl = lbl;
     this.gates.push(g);
@@ -282,13 +282,19 @@ class LevelScene extends Phaser.Scene {
     this.items.push({ type: 'treasure', x, y, img, gl, r: 50, tr, have });
   }
   spawnShrine(x, groundY) {
-    const sk = this.chap.skill; const known = sk && (this.p.seen['skill_' + sk] || this.ab[sk]);
-    const arch = this.add.image(x, groundY + 6, 'runegate').setOrigin(0.5, 1).setDisplaySize(190, 300).setDepth(7).setTint(0xb0a0b8);
-    const gl = this.add.image(x, groundY - 110, 'p_glow').setScale(5).setTint(0xff8a3a).setBlendMode('ADD').setDepth(8).setAlpha(known ? 0.2 : 0.8);
-    const stone = this.add.image(x, groundY - 90, 'crystal_red').setDepth(9); stone.setScale(90 / stone.height);
-    if (!known) { this.tweens.add({ targets: stone, y: groundY - 110, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' }); this.tweens.add({ targets: gl, alpha: 0.4, duration: 900, yoyo: true, repeat: -1 }); }
-    this.add.text(x, groundY - 320, known ? 'Alter Hort' : 'Ein alter Drachenhort!', K.txt(22, '#ffe9a8')).setOrigin(0.5).setDepth(14);
-    this.triggers.push({ type: 'shrine', x, y: groundY, r: 70, used: !sk || known, gl, stone });
+    // Drachenhort: Kristall auf einem Steinsockel (bewusst kein Torbogen, damit er nicht wie ein Aufgabentor aussieht)
+    const sk = this.chap.skill; const known = !sk || !!(this.p.seen['skill_' + sk] || this.ab[sk]);
+    const S = K.Story.SKILLS[sk];
+    const base = this.add.image(x, groundY + 6, 'w1_column').setOrigin(0.5, 1).setDepth(7).setTint(0x9a8a9a); base.setScale(110 / base.height);
+    const gl = this.add.image(x, groundY - 150, 'p_glow').setScale(5).setTint(0xff8a3a).setBlendMode('ADD').setDepth(8).setAlpha(known ? 0.15 : 0.8);
+    const stone = this.add.image(x, groundY - 150, 'crystal_red').setDepth(9); stone.setScale(80 / stone.height);
+    if (known) stone.setTint(0x8a7a80).setAlpha(0.7);
+    else {
+      this.tweens.add({ targets: stone, y: groundY - 172, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' }); this.tweens.add({ targets: gl, alpha: 0.4, duration: 900, yoyo: true, repeat: -1 });
+      this.add.particles(x, groundY - 150, 'p_spark', { speed: { min: 20, max: 60 }, scale: { start: 0.6, end: 0 }, lifespan: 900, frequency: 120, blendMode: 'ADD' }).setDepth(9);
+    }
+    this.add.text(x, groundY - 240, known ? `Drachenhort (${S ? S.name : 'leer'})` : 'Drachenhort: neue Drachenkunst!', K.txt(22, known ? '#c8b8a8' : '#ffe9a8')).setOrigin(0.5).setDepth(14);
+    this.triggers.push({ type: 'shrine', x, y: groundY, r: 70, used: known, known, gl, stone, skill: S });
   }
 
   // ---------- Steuerung ----------
@@ -609,11 +615,12 @@ class LevelScene extends Phaser.Scene {
         this.addGems(8);
       }
       if (t.type === 'shrine' && !t.used) { t.used = true; this.learnSkill(t); }
+      if (t.type === 'shrine' && t.known && !t.told) { t.told = true; K.UI.toast(this, t.skill ? `Hier hat Kivalu schon ${t.skill.name} gelernt.` : 'Ein leerer alter Hort.', { size: 28 }); }
     }
     // Tore
     const g = this.gates.find(g => !g.open);
     if (g && !this.busy) {
-      const near = this.mode === 'fly' ? px > g.x - 150 : (g.bridge ? px > g.x - 60 && px < g.x + 140 : px > g.x - 140 && px < g.x + 20 && pl.y > (g.cy - 3) * 64);
+      const near = this.mode === 'fly' ? px > g.x - 150 : (g.bridge ? px > g.x - 70 && px < g.x + 6 * 64 : px > g.x - 140 && px < g.x + 20 && pl.y > (g.cy - 3) * 64);
       if (near) this.openGate(g);
     }
     // Ziel
