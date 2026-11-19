@@ -47,7 +47,8 @@ function installBot() {
     } else {
       // Position auf dem Weg bestimmen
       const cx = Math.floor(pl.x / T), cy = Math.floor((b.bottom + 2) / T);
-      const me = [cx, cy], riding = on && this.movers.find(m => Math.abs(m.img.x - pl.x) < 110 && Math.abs(m.img.y - 12 - b.bottom) < 24);
+      const mx = on && !R.stand(cx, cy) ? (R.stand(cx + 1, cy) && pl.x % T > 32 ? cx + 1 : R.stand(cx - 1, cy) ? cx - 1 : cx + 1) : cx;
+      const me = [mx, cy], riding = on && this.movers.find(m => Math.abs(m.img.x - pl.x) < 110 && Math.abs(m.img.y - 12 - b.bottom) < 24);
       if (on && !riding) for (let k = Math.min(path.length - 1, st.i + 40); k >= 0; k--) if ((path[k][0] === cx && path[k][1] === cy) || walkable(me, path[k])) { st.i = k; break; }
       if (riding) for (let k = Math.min(path.length - 1, st.i + 20); k >= st.i; k--) if (R.mv(path[k][0], path[k][1]) && path[k][1] === cy) { st.i = k; break; }
       const cur = riding ? path[st.i] : me;
@@ -143,7 +144,7 @@ function installBot() {
       }
       const pop = await pg.evaluate(() => { const L = K.game.scene.getScene('Level'); return L.sys.isActive() && L.busy && !L.won && !K.game.scene.isActive('Task') && L.children.list.some(o => o.type === 'Container' && o.depth === 4500 && o.active); });
       if (pop) { await sleep(800); await pg.mouse.click(640 + 90, 360 + 220); res.popups++; await sleep(500); continue; }
-      const st = await pg.evaluate(() => ({ stuck: Date.now() - BOT.lastMove, x: Math.round(K.game.scene.getScene('Level').pl.x), y: Math.round(K.game.scene.getScene('Level').pl.y), busy: K.game.scene.getScene('Level').busy }));
+      const st = await pg.evaluate(() => ({ stuck: (L => L.boss && L.boss.state !== 'dead' ? 0 : Date.now() - BOT.lastMove)(K.game.scene.getScene('Level')), x: Math.round(K.game.scene.getScene('Level').pl.x), y: Math.round(K.game.scene.getScene('Level').pl.y), busy: K.game.scene.getScene('Level').busy }));
       if (process.env.DEBUG == 2 && Date.now() % 3000 < 260) console.log('  pos', JSON.stringify(st), await pg.evaluate(() => JSON.stringify({ i: BOT.i, mode: BOT.mode, cur: BOT.path[BOT.i], tgt: BOT.tgt })));
       if (st.stuck > 15000 && !st.busy) { res.note = `steckt fest bei x=${st.x} (Feld ${Math.floor(st.x / 64)}), y=${st.y}`; break; }
       await sleep(250);
