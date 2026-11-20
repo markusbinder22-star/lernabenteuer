@@ -31,8 +31,14 @@ K.Audio = (() => {
     ambBus.gain.value = 0.5 * s.sfx;
     sfxBus.gain.value = 0.75 * s.sfx * s.sfx;
   }
+  // Safari kann teils kein Ogg: dann die mitgelieferte .m4a-Fassung nehmen (nur in der Web-Version vorhanden)
+  const OGG = (() => { try { return !!new Audio().canPlayType('audio/ogg; codecs="vorbis"'); } catch (e) { return true; } })();
   async function fetchBuf(path) {
-    const res = await fetch(K.url(path));
+    if (!OGG && /\.ogg$/.test(path)) { try { return await rawBuf(path.replace(/\.ogg$/, '.m4a')); } catch (e) {} }
+    return rawBuf(path);
+  }
+  async function rawBuf(path) {
+    const res = await fetch(K.url(path)); if (!res.ok) throw new Error(res.status);
     const ab = await res.arrayBuffer();
     return await new Promise((ok, bad) => { const p = ctx.decodeAudioData(ab, ok, bad); if (p && p.then) p.then(ok, bad); });
   }
@@ -107,7 +113,7 @@ K.Audio = (() => {
     duckGain.gain.cancelScheduledValues(t); duckGain.gain.setTargetAtTime(on ? 0.35 : 1, t, on ? 0.08 : 0.4);
   }
   function unlock() { ensure(); if (wantMusic && (!curMusic || curMusic.key !== wantMusic)) music(wantMusic); if (wantAmb && (!curAmb || curAmb.key !== wantAmb)) ambient(wantAmb); }
-  ['pointerdown', 'keydown', 'touchstart'].forEach(ev => window.addEventListener(ev, unlock, { passive: true }));
+  ['pointerdown', 'keydown', 'touchstart', 'touchend', 'click'].forEach(ev => window.addEventListener(ev, unlock, { passive: true }));
   document.addEventListener('visibilitychange', () => { if (!ctx) return; if (document.hidden) ctx.suspend(); else ctx.resume(); });
 
   return { ensure, loadSfx, music, ambient, sfx, duck, applyVolumes, getMusic, get ready() { return !!ctx; } };

@@ -66,6 +66,12 @@ jobs:
           python3 scripts/build_pc.py
           cp dist/Kivalu.html Kivalu-PC.html
 
+      - name: Web-Version für die eigene Website bauen
+        run: |
+          which ffmpeg || (sudo apt-get update -q && sudo apt-get install -y -q ffmpeg)
+          python3 scripts/build_web.py
+          cp dist/Kivalu-Web.zip Kivalu-Web.zip
+
       - name: APK als Build-Artefakt ablegen
         uses: actions/upload-artifact@v4
         with:
@@ -73,6 +79,7 @@ jobs:
           path: |
             Kivalu.apk
             Kivalu-PC.html
+            Kivalu-Web.zip
           retention-days: 30
 
       - name: APK als Release veröffentlichen (Download-Link)
@@ -85,7 +92,7 @@ jobs:
             TAG="app-test"; TITLE="Kivalu – Testversion (noch nicht übernommen)"; FLAG="--prerelease"
           fi
           gh release delete "$TAG" --yes --cleanup-tag || true
-          gh release create "$TAG" Kivalu.apk Kivalu-PC.html $FLAG \
+          gh release create "$TAG" Kivalu.apk Kivalu-PC.html Kivalu-Web.zip $FLAG \
             --target "$GITHUB_SHA" \
             --title "$TITLE" \
-            --notes "Automatisch gebaut aus ${GITHUB_REF_NAME} (Build ${GITHUB_RUN_NUMBER}). Android: Kivalu.apk herunterladen und am Gerät öffnen. PC: Kivalu-PC.html herunterladen und doppelklicken (läuft offline in Chrome/Edge)."
+            --notes "Automatisch gebaut aus ${GITHUB_REF_NAME} (Build ${GITHUB_RUN_NUMBER}). Android: Kivalu.apk herunterladen und am Gerät öffnen. PC: Kivalu-PC.html herunterladen und doppelklicken (läuft offline in Chrome/Edge). Website: Kivalu-Web.zip entpacken und den Ordner kivalu-spiel als /spiel/ hochladen, siehe einbau-beispiel.html."

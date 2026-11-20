@@ -70,5 +70,12 @@ K.UI = (() => {
   function speakBtn(scene, x, y, getText, opt = {}) {
     return roundBtn(scene, x, y, opt.r || 34, 'ic_speak', () => K.Speech.say(typeof getText === 'function' ? getText() : getText, opt), { style: opt.style || 'gold' });
   }
-  return { panel, button, roundBtn, toast, hud, speakBtn };
+  // Vollbild-Knopf (nur im Browser, nicht in der App; auf dem iPhone gibt es kein Vollbild für Webseiten)
+  function fullBtn(scene, x, y) {
+    if (K.isApp || !document.fullscreenEnabled) return null;
+    return roundBtn(scene, x, y, 34, 'ic_full', () => {
+      try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen({ navigationUI: 'hide' }).then(() => { try { screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} }).catch(() => {}); } catch (e) {}
+    }, { style: 'stone' }).setDepth(50);
+  }
+  return { panel, button, roundBtn, toast, hud, speakBtn, fullBtn };
 })();

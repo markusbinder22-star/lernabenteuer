@@ -45,6 +45,7 @@ class ProfilesScene extends Phaser.Scene {
     ps.slice(0, 4).forEach((p, i) => this.card(p, K.W * 0.34, y0 + 30 + i * 96));
     if (ps.length < 4) K.UI.button(this, K.W * 0.34, y0 + 30 + ps.length * 96, 420, 80, '+ Neues Kind', () => this.newProfile(), { style: 'green', size: 32 }).setDepth(7);
     K.UI.roundBtn(this, K.W - 54, 52, 34, 'ic_gear', () => this.scene.start('Parents'), { style: 'stone' }).setDepth(8);
+    K.UI.fullBtn(this, K.W - 140, 52);
     this.add.text(16, K.H - 26, 'Für Eltern: Zahnrad oben rechts', K.txt(16, '#d8c0a0', { strokeThickness: 3 })).setDepth(8).setAlpha(0.8);
   }
   card(p, x, y) {

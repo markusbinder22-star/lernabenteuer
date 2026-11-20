@@ -14,6 +14,7 @@ class MapScene extends Phaser.Scene {
     this.hud = K.UI.hud(this, this.p);
     K.UI.roundBtn(this, K.W - 60, 50, 36, 'ic_hort', () => this.go('Hort'), { style: 'gold' }).setDepth(50);
     K.UI.roundBtn(this, K.W - 145, 50, 36, 'ic_home', () => this.go('Profiles'), { style: 'stone' }).setDepth(50);
+    K.UI.fullBtn(this, K.W - 230, 50);
     this.add.text(K.W - 60, 96, 'Hort', K.txt(18)).setOrigin(0.5).setDepth(50);
     this.input.keyboard.on('keydown-LEFT', () => this.switch(-1));
     this.input.keyboard.on('keydown-RIGHT', () => this.switch(1));

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Einbau-Beispiel: Kivalu-Spiel</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 30px auto; padding: 0 16px; background: #faf6f0; color: #2a1a10; }
+  /* ---- ab hier in die Website übernehmen ---- */
+  .kivalu-game { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; background: #1a0b14 center / cover no-repeat; cursor: pointer; }
+  .kivalu-game iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .kivalu-game .kg-play { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(13, 8, 24, .35); color: #fff; font: 700 clamp(18px, 3vw, 28px) system-ui, sans-serif; text-shadow: 0 2px 6px #000; border: 0; width: 100%; cursor: pointer; }
+  .kivalu-game .kg-play span:first-child { width: 84px; height: 84px; border-radius: 50%; background: #f0a92c; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+  .kivalu-game .kg-play span:first-child::before { content: ""; margin-left: 8px; border-style: solid; border-width: 18px 0 18px 30px; border-color: transparent transparent transparent #3a1a00; }
+  .kivalu-game small { font-weight: 400; font-size: 14px; opacity: .9; }
+  /* ---- bis hier ---- */
+</style>
+</head>
+<body>
+<h1>Einbau-Beispiel</h1>
+<p>Das Spiel lädt erst, wenn man auf das Bild klickt. Vorher kostet es die Seite nur das Vorschaubild (ca. 40 KB).</p>
+
+<!-- ---- ab hier in die Website übernehmen (Pfad /spiel/ anpassen, falls anders hochgeladen) ---- -->
+<div class="kivalu-game" id="kivalu-game" style="background-image:url('/spiel/poster.webp')">
+  <button class="kg-play" type="button" aria-label="Spiel starten">
+    <span></span>
+    Kivalu-Abenteuer spielen
+    <small>Am Handy bitte quer halten</small>
+  </button>
+</div>
+<script>
+  document.querySelector('#kivalu-game .kg-play').addEventListener('click', function () {
+    var box = document.getElementById('kivalu-game');
+    var f = document.createElement('iframe');
+    f.src = '/spiel/index.html';
+    f.title = 'Kivalu und die gestohlene Herzglut';
+    f.allow = 'autoplay; fullscreen';
+    f.allowFullscreen = true;
+    box.innerHTML = '';
+    box.appendChild(f);
+    f.focus();
+  });
+</script>
+<!-- ---- bis hier ---- -->
+</body>
+</html>
