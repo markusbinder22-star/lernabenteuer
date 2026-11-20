@@ -1,0 +1,9 @@
+{
+  "appId": "at.purzeltal.lernabenteuer",
+  "appName": "Kivalu",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#0d0818"
+  }
+}

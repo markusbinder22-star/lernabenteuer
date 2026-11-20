@@ -1,0 +1,39 @@
+<html><body style="margin:0"><script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {loadKivalu,applyPose} from './rig.js';import {ANIMS,ORDER,POSES} from './anims.js';import {HATS,ANCHOR} from './hats.js';
+const opt=JSON.parse(decodeURIComponent(location.search.slice(1))||'{}');
+const SZ=opt.sz||512, A=opt.angle??0.55, E=opt.elev??0.12, HALF=opt.half||0.7;
+const r=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});r.setSize(SZ,SZ);r.outputColorSpace=THREE.SRGBColorSpace;r.toneMapping=THREE.NeutralToneMapping;r.toneMappingExposure=1.05;
+const s=new THREE.Scene();const pm=new THREE.PMREMGenerator(r);s.environment=pm.fromScene(new RoomEnvironment(),0.04).texture;s.environmentIntensity=0.55;
+s.add(new THREE.HemisphereLight(0xfff4e8,0x5a4a6a,1.3));
+const key=new THREE.DirectionalLight(0xfff0dd,2.6);key.position.set(2.5,3.5,3);s.add(key);
+const rim=new THREE.DirectionalLight(0x9fd0ff,2.2);rim.position.set(-3,1.5,-2.5);s.add(rim);
+const k=await loadKivalu();s.add(k.root);
+if(opt.recolor||opt.stone){const img=k.material.map.image;const cv=document.createElement('canvas');cv.width=img.width;cv.height=img.height;const g=cv.getContext('2d');g.drawImage(img,0,0);const d=g.getImageData(0,0,cv.width,cv.height),a=d.data;
+ const rc=opt.recolor||{};for(let i=0;i<a.length;i+=4){let r=a[i]/255,gg=a[i+1]/255,b=a[i+2]/255;const mx=Math.max(r,gg,b),mn=Math.min(r,gg,b);let h=0,l=(mx+mn)/2,sa=0;const dd=mx-mn;
+  if(dd>1e-4){sa=l>0.5?dd/(2-mx-mn):dd/(mx+mn);h=mx===r?((gg-b)/dd+(gg<b?6:0)):mx===gg?((b-r)/dd+2):((r-gg)/dd+4);h*=60;}
+  if(opt.stone){const v=(0.3*r+0.59*gg+0.11*b)*0.8+0.12;const n=(Math.random()-0.5)*0.06;r=v*1.02+n;gg=v+n;b=v*0.96+n;}
+  else{const blue=h>165&&h<265&&sa>0.18;const other=rc.all&&!blue;if(blue||other){h=(blue?rc.hue:(h+(rc.shiftOther||0)))%360;sa=Math.min(1,sa*(rc.sat??1));l=Math.min(1,l*(rc.light??1));
+   const q=l<0.5?l*(1+sa):l+sa-l*sa,pp=2*l-q;const f=(t)=>{t=(t+1)%1;return t<1/6?pp+(q-pp)*6*t:t<1/2?q:t<2/3?pp+(q-pp)*(2/3-t)*6:pp};const hh=h/360;r=f(hh+1/3);gg=f(hh);b=f(hh-1/3);}}
+  a[i]=r*255;a[i+1]=gg*255;a[i+2]=b*255;}
+ g.putImageData(d,0,0);const t=new THREE.CanvasTexture(cv);t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;k.material.map=t;if(opt.stone){k.material.roughness=0.95;k.material.metalness=0;k.material.roughnessMap=null;k.material.metalnessMap=null;}k.material.needsUpdate=true;}
+const PIVS={head:[0.12,0.0,0],body:[0.12,-0.25,0]};let hat=null;
+if(opt.hat){const [bn,x,y,z,rz,sc]=ANCHOR[opt.hat];hat=HATS[opt.hat]();const holder=new THREE.Group();holder.position.set(x-PIVS[bn][0],y-PIVS[bn][1],z-PIVS[bn][2]);holder.rotation.z=rz;holder.scale.setScalar(sc);holder.add(hat);k.bones[bn].add(holder);
+ if(!opt.withBody){k.mesh.material=k.material.clone();k.mesh.material.colorWrite=false;k.mesh.renderOrder=-1;}}
+const PFX=opt.hat?('hat_'+opt.hat+'/'):'';
+const c=new THREE.OrthographicCamera(-HALF,HALF,HALF,-HALF,0.01,10);c.position.set(Math.sin(A)*3,E*3,Math.cos(A)*3);c.lookAt(0,0.03,0);
+const post=async(name,blob)=>fetch('/'+name,{method:'POST',body:blob});
+const toBlob=()=>new Promise(res=>r.domElement.toBlob(res,'image/png'));
+// mouth anchor in model local coords (head bone space computed at bind)
+const mouthLocal=new THREE.Vector3(0.40,0.06,0).sub(new THREE.Vector3(0.12,0.0,0));
+const meta={};
+if(opt.poses){for(const [name,src,fi] of opt.poses){applyPose(k,ANIMS[src]?ANIMS[src].f(fi/ANIMS[src].n):POSES[src]);k.root.updateMatrixWorld(true);r.render(s,c);await post(`portraits/${name}.png`,await toBlob());}window.DONE=1;throw 'done';}
+const list=opt.only?opt.only:ORDER;
+for(const name of list){const an=ANIMS[name];meta[name]={n:an.n,fps:an.fps,mouth:[]};
+ for(let i=0;i<an.n;i++){applyPose(k,an.f(i/an.n));k.root.updateMatrixWorld(true);
+  r.render(s,c);await post(`frames/${PFX}${name}_${i}.png`,await toBlob());
+  const m=mouthLocal.clone().applyMatrix4(k.bones.head.matrixWorld).project(c);meta[name].mouth.push([+(m.x*0.5+0.5).toFixed(3),+(0.5-m.y*0.5).toFixed(3)]);
+ }}
+await post('frames/meta.json',new Blob([JSON.stringify(meta)]));window.DONE=1;
+</script></body></html>
